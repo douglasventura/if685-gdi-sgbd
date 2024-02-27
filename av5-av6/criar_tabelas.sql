@@ -51,7 +51,9 @@ CREATE OR REPLACE TYPE tp_funcionario UNDER tp_pessoa (
     ctps VARCHAR2(20),
     conta REF tp_dados_bancarios,
     salario DECIMAL(10,2),
-    cpf_supervisor REF tp_funcionario
+    cpf_supervisor REF tp_funcionario,
+
+    OVERRIDING MEMBER FUNCTION exibir_nome RETURN VARCHAR2
 );
 /
 
@@ -197,7 +199,18 @@ END;
 /
 
 CREATE OR REPLACE TYPE BODY tp_funcionario AS
-    -- Member procedures and functions here
+    OVERRIDING MEMBER FUNCTION exibir_nome RETURN VARCHAR2 IS
+        v_supervisor_nome VARCHAR2(50);
+    BEGIN
+        SELECT p.nome INTO v_supervisor_nome
+        FROM tb_pessoa p
+        WHERE p.cpf = VALUE(SELF.tp_funcionario.cpf_supervisor).cpf;
+
+        RETURN 'Nome do Funcionário: ' || self.nome || ', Detalhes de seu supervisor: ' || v_supervisor_nome;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 'Nome do Funcionário: ' || self.nome || ', Supervisor não encontrado';
+    END exibir_nome;
 END;
 /
 
