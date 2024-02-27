@@ -39,7 +39,8 @@ CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
     numero NUMBER,
     telefone tp_telefones,
 
-    MAP MEMBER FUNCTION descrever_sexo RETURN VARCHAR2
+    MAP MEMBER FUNCTION descrever_sexo RETURN VARCHAR2,
+    OVERRIDING MEMBER FUNCTION calcular_em_dolar RETURN DECIMAL
 ) NOT FINAL;
 /
 
@@ -48,7 +49,9 @@ CREATE OR REPLACE TYPE tp_funcionario UNDER tp_pessoa (
     ctps VARCHAR2(20),
     conta REF tp_dados_bancarios,
     salario DECIMAL(10,2),
-    cpf_supervisor REF tp_funcionario
+    cpf_supervisor REF tp_funcionario,
+
+    OVERRIDING MEMBER FUNCTION calcular_em_dolar RETURN DECIMAL
 );
 /
 
@@ -162,14 +165,23 @@ CREATE OR REPLACE TYPE BODY tp_pessoa AS
         IF SELF.sexo = 'F' THEN
             RETURN 'Mulher';
         ELSE
-        RETURN 'Homem';
+            RETURN 'Homem';
         END IF;
+    END;
+
+   OVERRIDING MEMBER FUNCTION calcular_em_dolar RETURN DECIMAL IS
+    BEGIN
+        RETURN NULL; -- Deixamos o cálculo para ser implementado nas subclasses
     END;
 END;
 /
 
+
 CREATE OR REPLACE TYPE BODY tp_funcionario AS
-    -- Member procedures and functions here
+   OVERRIDING MEMBER FUNCTION calcular_em_dolar RETURN DECIMAL IS
+    BEGIN
+        RETURN salario * 0.2;
+    END calcular_em_dolar;
 END;
 /
 
