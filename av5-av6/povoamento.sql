@@ -236,224 +236,82 @@ INSERT INTO
 VALUES
     ('00007293817293817', '08008', '25814736');
 
--- Cartões
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('1234598765432456', '123', '12/2025');
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('6543210987654321', '456', '06/2023');
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('9876543210987654', '789', '09/2024');
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('2345987654324567', '234', '03/2022');
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('7654321098765432', '567', '08/2026');
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('3210987654321098', '890', '05/2023');
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('5432109876543210', '123', '11/2025');
-INSERT INTO
-    tb_cartao (numero_do_cartao, cvv, validade) 
-VALUES 
-    ('8901234598765432', '456', '02/2024');
-
--- Funcionario
-INSERT INTO
-    tb_funcionario (cpf_func, ctps, conta, salario, cpf_supervisor)
-VALUES
-    ('987.654.321-00', '98765432102', '00001234561234567', 4200.80, NULL);
-INSERT INTO
-    tb_funcionario (cpf_func, ctps, conta, salario, cpf_supervisor)
-VALUES
-    ('321.098.765-67', '34567890108', '00007293817293817', 1320.00, NULL);
-INSERT INTO
-    tb_funcionario (cpf_func, ctps, conta, salario, cpf_supervisor)
-VALUES
-    ('123.456.789-09', '12345678901', '00000876224123688', 1000.00, '987.654.321-00');
-INSERT INTO
-    tb_funcionario (cpf_func, ctps, conta, salario, cpf_supervisor)
-VALUES
-    ('234.567.890-12', '45678901203', '00002468012468012', 1400.22, '987.654.321-00');
-INSERT INTO
-    tb_funcionario (cpf_func, ctps, conta, salario, cpf_supervisor)
-VALUES
-    ('345.678.901-23', '89012345604', '00003698723698723', 1984.32, '987.654.321-00');
-INSERT INTO
-    tb_funcionario (cpf_func, ctps, conta, salario, cpf_supervisor)
-VALUES
-    ('876.543.210-34', '23456789005', '00004000014000014', 2200.99, '321.098.765-67');
 -- Funcionario
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('987.654.321-00', '98765432102', REF(tp_dados_bancarios('00001234561234567', '05005', '86420973')), 4200.80, NULL)
+    tp_funcionario('987.654.321-00', 'Mariana Costa', 'mariana.costa@email.com', 'F', '1987-04-03', '01234567', 12, tp_telefones(tp_telefone('987.654.321-00', '81999991234'),tp_telefone('987.654.321-00', '83978871243')), '98765432102',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00001234561234567'), 
+        4200.80, NULL)
 );
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('321.098.765-67', '34567890108', REF(tp_dados_bancarios('00007293817293817', '08008', '25814736')), 1320.00, NULL)
+    tp_funcionario('321.098.765-67', 'Roberto Viga', 'rv@email.com', 'M', '1989-06-12', '54321098', 34, tp_telefones(tp_telefone('321.098.765-67', '81999991234'),tp_telefone('321.098.765-67', '83978871243')), '34567890108',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00007293817293817'), 
+        1320.00, NULL)
 );
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('123.456.789-09', '12345678901', REF(tp_dados_bancarios('00000876224123688', '06006', '74125896')), 1000.00, (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf_func = '987.654.321-00'))
+    tp_funcionario('123.456.789-09', 'Maria Silva', 'ms@email.com', 'F', '1990-08-23', '45678901', 56, tp_telefones(tp_telefone('123.456.789-09', '81999991234'),tp_telefone('123.456.789-09', '83978871243')), '12345678901',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00000876224123688'), 
+        1000.00, 
+        (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf = '987.654.321-00'))
 );
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('234.567.890-12', '45678901203', REF(tp_dados_bancarios('00002468012468012', '07007', '36985214')), 1400.22, (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf_func = '987.654.321-00'))
+    tp_funcionario('234.567.890-12', 'João Santos', 'js@email.com', 'M', '1992-10-15', '98765432', 78, tp_telefones(tp_telefone('234.567.890-12', '81999991234'),tp_telefone('234.567.890-12', '83978871243')), '45678901203',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00002468012468012'), 
+        1400.22, 
+        (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf = '987.654.321-00'))
 );
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('345.678.901-23', '89012345604', REF(tp_dados_bancarios('00003698723698723', '07007', '36985214')), 1984.32, (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf_func = '987.654.321-00'))
+    tp_funcionario('345.678.901-23', 'Ana Oliveira', 'ao@example.com', 'F', '1995-12-28', '34567890', 90, tp_telefones(tp_telefone('345.678.901-23', '81999991234'),tp_telefone('345.678.901-23', '83978871243')), '89012345604',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00003698723698723'), 
+        1984.32, 
+        (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf = '987.654.321-00'))
 );
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('876.543.210-34', '23456789005', REF(tp_dados_bancarios('00004000014000014', '05005', '86420973')), 2200.99, (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf_func = '321.098.765-67'))
+    tp_funcionario('876.543.210-34', 'Carlos Pereira', 'cp@eemail.com', 'M', '1998-02-01', '21098765', 43, tp_telefones(tp_telefone('876.543.210-34', '81999991234'),tp_telefone('876.543.210-34', '83978871243')), '23456789005',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00004000014000014'), 
+        2200.99, 
+        (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf = '321.098.765-67'))
 );
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('987.654.321-45', '59876543206', REF(tp_dados_bancarios('00005432165432165', '06006', '74125896')), 3290.00, (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf_func = '321.098.765-67'))
+    tp_funcionario('987.654.321-45', 'Paulo Souza', 'ps@email.com', 'M', '1999-04-15', '78901234', 67, tp_telefones(tp_telefone('987.654.321-45', '81999991234'),tp_telefone('987.654.321-45', '83978871243')), '59876543206',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00005432165432165'), 
+        3290.00, 
+        (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf = '321.098.765-67'))
 );
 INSERT INTO tb_funcionario VALUES (
-    tp_funcionario('567.890.123-56', '01234567807', REF(tp_dados_bancarios('00006876546876546', '07007', '36985214')), 2209.00, (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf_func = '321.098.765-67'))
+    tp_funcionario('567.890.123-56', 'Lucas Santos', 'ls@email.com', 'M', '2000-06-28', '87654321', 12, tp_telefones(tp_telefone('567.890.123-56', '81999991234'),tp_telefone('567.890.123-56', '83978871243')), '01234567807',
+        (SELECT REF(db) FROM tb_dados_bancarios db WHERE db.conta = '00006876546876546'), 
+        2209.00, 
+        (SELECT REF(f) FROM tb_funcionario f WHERE f.cpf = '321.098.765-67'))
 );
 
 -- Cliente
 INSERT INTO tb_cliente VALUES (
-    tp_cliente('111.222.333-44', 45, tp_nt_cartoes(tp_cartao('1234598765432456', '123', '12/2025')))
+    tp_cliente('111.222.333-44', 'Maria Oliveira', 'mo@email.com', 'F', '1990-08-23', '01234567', 56, tp_telefones(tp_telefone('111.222.333-44', '81999991234'),tp_telefone('111.222.333-44', '83978871243')),
+    45, tp_nt_cartoes(tp_cartao('1234598765432456', '123', '12/2025')))
 );
 INSERT INTO tb_cliente VALUES (
-    tp_cliente('444.555.666-77', 89, tp_nt_cartoes(tp_cartao('6543210987654321', '456', '06/2023')))
+    tp_cliente('444.555.666-77', 'Roberto Santos', 'rs@email.com', 'M', '1992-10-15', '54321098', 34, tp_telefones(tp_telefone('444.555.666-77', '81999991234'),tp_telefone('444.555.666-77', '83978871243')),
+    89, tp_nt_cartoes(tp_cartao('6543210987654321', '456', '06/2023')))
 );
 INSERT INTO tb_cliente VALUES (
-    tp_cliente('222.333.444-55', 23, tp_nt_cartoes(tp_cartao('9876543210987654', '789', '09/2024')))
+    tp_cliente('222.333.444-55', 'Fernanda Oliveira', 'fernanda@email.com', 'F', '1990-03-25', '34567890', 45, tp_telefones(tp_telefone('222.333.444-55', '81999991234'),tp_telefone('222.333.444-55', '83978871243')),
+    23, tp_nt_cartoes(tp_cartao('9876543210987654', '789', '09/2024')))
 );
 INSERT INTO tb_cliente VALUES (
-    tp_cliente('999.888.777-66', 45, tp_nt_cartoes(tp_cartao('2345987654324567', '234', '03/2022')))
+    tp_cliente('999.888.777-66', 'Camila Rocha', 'camila.rocha@email.com', 'F', '1997-04-30', '21098765', 45, tp_telefones(tp_telefone('999.888.777-66', '81999991234'),tp_telefone('999.888.777-66', '83978871243')),
+    45, tp_nt_cartoes(tp_cartao('2345987654324567', '234', '03/2022')))
 );
 INSERT INTO tb_cliente VALUES (
-    tp_cliente('777.888.999-00', 67, tp_nt_cartoes(tp_cartao('3210987654321098', '567', '08/2026')))
+    tp_cliente('777.888.999-00', 'Eduardo Santos', 'eduardo.santos@email.com', 'M', '1986-11-08', '87654321', 67, tp_telefones(tp_telefone('777.888.999-00', '81999991234'),tp_telefone('777.888.999-00', '83978871243')),
+    67, tp_nt_cartoes(tp_cartao('3210987654321098', '567', '08/2026')))
 );
 INSERT INTO tb_cliente VALUES (
-    tp_cliente('666.777.888-99', 89, tp_nt_cartoes(tp_cartao('5432109876543210', '123', '11/2025')))
+    tp_cliente('666.777.888-99', 'Larissa Lima', 'larissa.lima@email.com', 'F', '1991-05-14', '78901234', 89, tp_telefones(tp_telefone('666.777.888-99', '81999991234'),tp_telefone('666.777.888-99', '83978871243')),
+    89, tp_nt_cartoes(tp_cartao('5432109876543210', '123', '11/2025')))
 );
 INSERT INTO tb_cliente VALUES (
-    tp_cliente('333.444.555-66', 23, tp_nt_cartoes(tp_cartao('8901234598765432', '456', '02/2024')))
-);
-
--- Telefone
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('123.456.789-09', '1122334455')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('123.456.789-09', '8812332455')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('987.654.321-00', '5544332211')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('234.567.890-12', '9988776655')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('345.678.901-23', '6677889900')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('876.543.210-34', '1122334455')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('876.543.210-34', '9922531455')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('987.654.321-45', '9988776655')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('567.890.123-56', '6677889900')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('321.098.765-67', '5544332211')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('111.222.333-44', '1122334455')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('444.555.666-77', '6677889900')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('222.333.444-55', '5544332211')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('999.888.777-66', '9988776655')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('777.888.999-00', '6677889900')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('666.777.888-99', '1122334455')
-);
-INSERT INTO tb_telefone VALUES (
-    tp_telefone('333.444.555-66', '9988776655')
-);
-
--- Obra
-INSERT INTO tb_obra VALUES (
-    tp_obra('9783161484100', 'Nome Obra 1', 'Tipo Obra 1', 'Genero Obra 1', 2022, 300, 'Editora Obra 1')
-);
-INSERT INTO tb_obra VALUES (
-    tp_obra('2435161484111', 'Nome Obra 2', 'Tipo Obra 2', 'Genero Obra 2', 2023, 400, 'Editora Obra 2')
-);
-INSERT INTO tb_obra VALUES (
-    tp_obra('3452261118311', 'Nome Obra 3', 'Tipo Obra 3', 'Genero Obra 3', 2024, 500, 'Editora Obra 3')
-);
-
--- Copia
-INSERT INTO tb_copia VALUES (
-    tp_copia('9783161484100', 1, 'Disponível')
-);
-INSERT INTO tb_copia VALUES (
-    tp_copia('9783161484100', 2, 'Disponível')
-);
-INSERT INTO tb_copia VALUES (
-    tp_copia('9783161484100', 3, 'Disponível')
-);
-INSERT INTO tb_copia VALUES (
-    tp_copia('2435161484111', 1, 'Disponível')
-);
-INSERT INTO tb_copia VALUES (
-    tp_copia('2435161484111', 2, 'Disponível')
-);
-INSERT INTO tb_copia VALUES (
-    tp_copia('3452261118311', 1, 'Disponível')
-);
-INSERT INTO tb_copia VALUES (
-    tp_copia('3452261118311', 2, 'Disponível')
-);
-INSERT INTO tb_copia VALUES (
-    tp_copia('3452261118311', 3, 'Disponível')
-);
-
--- Autor
-INSERT INTO tb_autor VALUES (
-    tp_autor('9783161484100', 'Nome Autor 1')
-);
-INSERT INTO tb_autor VALUES (
-    tp_autor('2435161484111', 'Nome Autor 2')
-);
-INSERT INTO tb_autor VALUES (
-    tp_autor('3452261118311', 'Nome Autor 3')
-);
-
--- Subgenero
-INSERT INTO tb_subgenero VALUES (
-    tp_subgenero('9783161484100', 'Subgenero 1')
-);
-INSERT INTO tb_subgenero VALUES (
-    tp_subgenero('2435161484111', 'Subgenero 2')
-);
-INSERT INTO tb_subgenero VALUES (
-    tp_subgenero('3452261118311', 'Subgenero 3')
+    tp_cliente('333.444.555-66', 'Gustavo Costa', 'gustavo.costa@email.com', 'M', '1989-08-27', '21098765', 23, tp_telefones(tp_telefone('333.444.555-66', '81999991234'),tp_telefone('333.444.555-66', '83978871243')),
+    23, tp_nt_cartoes(tp_cartao('8901234598765432', '456', '02/2024')))
 );
 
 -- Livro Emprestado

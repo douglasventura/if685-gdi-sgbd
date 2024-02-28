@@ -39,7 +39,7 @@ CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
     numero NUMBER,
     telefone tp_telefones,
 
-    CONSTRUCTOR FUNCTION tp_pessoa(SELF IN OUT NOCOPY tp_pessoa, Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT,
+    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT,
 
     MEMBER FUNCTION exibir_nome RETURN VARCHAR2,
     FINAL MEMBER PROCEDURE exibir_detalhes_pessoa (SELF tp_pessoa)
@@ -47,7 +47,6 @@ CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
 /
 
 CREATE OR REPLACE TYPE tp_funcionario UNDER tp_pessoa (
-    cpf_func VARCHAR2(14),
     ctps VARCHAR2(20),
     conta REF tp_dados_bancarios,
     salario DECIMAL(10,2),
@@ -68,7 +67,6 @@ CREATE TYPE tp_nt_cartoes AS TABLE OF tp_cartao;
 /
 
 CREATE OR REPLACE TYPE tp_cliente UNDER tp_pessoa (
-    cpf_cliente VARCHAR2(14),
     numero_de_livro_emprestado NUMBER,
     lista_cartoes tp_nt_cartoes
 );
@@ -167,7 +165,7 @@ END;
 /
 
 CREATE OR REPLACE TYPE BODY tp_pessoa AS
-    CONSTRUCTOR FUNCTION tp_pessoa(SELF IN OUT NOCOPY tp_pessoa, Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT IS BEGIN
+    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT IS BEGIN
         SELF.cpf := cpf;
         SELF.nome := nome;
         SELF.email := email;
@@ -270,11 +268,6 @@ CREATE TABLE tb_dados_bancarios OF tp_dados_bancarios (
 );
 /
 
-CREATE TABLE tb_cartao OF tp_cartao (
-    CONSTRAINT cartao_pk PRIMARY KEY (numero_do_cartao)
-);
-/
-
 CREATE TABLE tb_pessoa OF tp_pessoa (
     CONSTRAINT pessoa_pk PRIMARY KEY (cpf),
     CONSTRAINT pessoa_cep_fk FOREIGN KEY (cep) REFERENCES tb_moradia (cep)
@@ -282,16 +275,14 @@ CREATE TABLE tb_pessoa OF tp_pessoa (
 /
 
 CREATE TABLE tb_funcionario OF tp_funcionario (
-    CONSTRAINT funcionario_pk PRIMARY KEY (cpf_func),
-    CONSTRAINT funcionario_cpf_fk FOREIGN KEY (cpf_func) REFERENCES tb_pessoa (cpf),
+    CONSTRAINT funcionario_pk PRIMARY KEY (cpf),
     conta SCOPE IS tb_dados_bancarios,
     cpf_supervisor WITH ROWID REFERENCES tb_funcionario
 );
 /
 
 CREATE TABLE tb_cliente OF tp_cliente (
-    CONSTRAINT cliente_pk PRIMARY KEY (cpf_cliente),
-    CONSTRAINT cliente_cpf_fk FOREIGN KEY (cpf_cliente) REFERENCES tb_pessoa (cpf)
+    CONSTRAINT cliente_pk PRIMARY KEY (cpf)
 ) NESTED TABLE lista_cartoes STORE AS nt_cartoes;
 /
 
@@ -318,23 +309,17 @@ CREATE TABLE tb_subgenero OF tp_subgenero (
 );
 /
 
-CREATE TABLE tb_telefone OF tp_telefone (
-    CONSTRAINT telefone_pk PRIMARY KEY (cpf, telefone),
-    CONSTRAINT telefone_cpf_fk FOREIGN KEY (cpf) REFERENCES tb_pessoa (cpf)
-);
-/
-
 CREATE TABLE tb_livro_emprestado OF tp_livro_emprestado (
     CONSTRAINT livro_emprestado_pk PRIMARY KEY (cpf_cliente, livro_emprestado),
-    CONSTRAINT livro_emprestado_cpf_fk FOREIGN KEY (cpf_cliente) REFERENCES tb_cliente (cpf_cliente)
+    CONSTRAINT livro_emprestado_cpf_fk FOREIGN KEY (cpf_cliente) REFERENCES tb_cliente (cpf)
 );
 /
 
 CREATE TABLE tb_empresta OF tp_empresta (
     CONSTRAINT empresta_pk PRIMARY KEY (cpf_cliente, cpf_func, isbn, numero_da_copia),
     CONSTRAINT empresta_isbn_fk FOREIGN KEY (isbn, numero_da_copia) REFERENCES tb_copia (isbn, numero_da_copia),
-    CONSTRAINT empresta_cpf_cliente_fk FOREIGN KEY (cpf_cliente) REFERENCES tb_cliente (cpf_cliente),
-    CONSTRAINT empresta_cpf_func_fk FOREIGN KEY (cpf_func) REFERENCES tb_funcionario (cpf_func),
-    CONSTRAINT empresta_cpf_func_multa_fk FOREIGN KEY (cpf_func_multa) REFERENCES tb_funcionario (cpf_func)
+    CONSTRAINT empresta_cpf_cliente_fk FOREIGN KEY (cpf_cliente) REFERENCES tb_cliente (cpf),
+    CONSTRAINT empresta_cpf_func_fk FOREIGN KEY (cpf_func) REFERENCES tb_funcionario (cpf),
+    CONSTRAINT empresta_cpf_func_multa_fk FOREIGN KEY (cpf_func_multa) REFERENCES tb_funcionario (cpf)
 );
 /
