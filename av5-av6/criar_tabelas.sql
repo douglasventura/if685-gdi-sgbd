@@ -66,8 +66,7 @@ CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
     numero NUMBER,
     telefone tp_telefones,
 
-    CONSTRUCTOR FUNCTION tp_pessoa(SELF IN OUT NOCOPY tp_pessoa, Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT,
-
+    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT,
     MEMBER FUNCTION exibir_nome RETURN VARCHAR2,
     FINAL MEMBER PROCEDURE exibir_detalhes_pessoa (SELF tp_pessoa)
 ) NOT FINAL NOT INSTANTIABLE;
@@ -163,8 +162,7 @@ END;
 /
 
 CREATE OR REPLACE TYPE BODY tp_pessoa AS
-    CONSTRUCTOR FUNCTION tp_pessoa(SELF IN OUT NOCOPY tp_pessoa, Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT IS BEGIN
-        SELF.cpf := cpf;
+    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT IS BEGIN        SELF.cpf := cpf;
         SELF.nome := nome;
         SELF.email := email;
         SELF.sexo := sexo;
