@@ -20,13 +20,40 @@ CREATE OR REPLACE TYPE tp_dados_bancarios AS OBJECT (
 );
 /
 
+
+CREATE OR REPLACE TYPE tp_autor AS OBJECT (
+    autor VARCHAR2(255)
+);
+/
+
+CREATE OR REPLACE TYPE tp_subgenero AS OBJECT (
+    subgenero VARCHAR2(255)
+);
+/
+
 CREATE OR REPLACE TYPE tp_telefone AS OBJECT (
-    cpf VARCHAR2(14),
     telefone VARCHAR2(20)
 );
 /
 
+CREATE OR REPLACE TYPE tp_copia AS OBJECT (
+    numero_da_copia NUMBER
+);
+/
+
+ALTER TYPE tp_copia ADD ATTRIBUTE status_de_disponibilidade VARCHAR2(20) CASCADE;
+/
+
 CREATE OR REPLACE TYPE tp_telefones AS VARRAY(5) OF tp_telefone;
+/
+
+CREATE OR REPLACE TYPE tp_autores AS VARRAY(5) OF tp_autor;
+/
+
+CREATE OR REPLACE TYPE tp_subgeneros AS VARRAY(5) OF tp_subgenero;
+/
+
+CREATE OR REPLACE TYPE tp_copias AS VARRAY(50) OF tp_copia;
 /
 
 CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
@@ -35,12 +62,11 @@ CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
     email VARCHAR2(100),
     sexo CHAR(1),
     data_de_nascimento DATE,
-    cep VARCHAR2(8),
+    endereco REF tp_moradia,
     numero NUMBER,
     telefone tp_telefones,
 
     CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT,
-
     MEMBER FUNCTION exibir_nome RETURN VARCHAR2,
     FINAL MEMBER PROCEDURE exibir_detalhes_pessoa (SELF tp_pessoa)
 ) NOT FINAL NOT INSTANTIABLE;
@@ -80,46 +106,27 @@ CREATE OR REPLACE TYPE tp_obra AS OBJECT (
     ano_de_publicacao NUMBER,
     numero_de_paginas NUMBER,
     editora VARCHAR2(100),
+    lista_autores tp_autores,
+    lista_subgeneros tp_subgeneros,
+    lista_copias tp_copias,
 
     ORDER MEMBER FUNCTION comparaNumeroPaginas (X tp_obra) RETURN INTEGER
 );
 /
 
-CREATE OR REPLACE TYPE tp_copia AS OBJECT (
-    isbn VARCHAR2(13),
-    numero_da_copia NUMBER,
-    status_de_disponibilidade VARCHAR2(20)
-);
-/
-
-CREATE OR REPLACE TYPE tp_autor AS OBJECT (
-    isbn VARCHAR2(13)
-);
-/
-
-ALTER TYPE tp_autor ADD ATTRIBUTE nome_autor VARCHAR2(255) CASCADE;
-/
-
-CREATE OR REPLACE TYPE tp_subgenero AS OBJECT (
-    isbn VARCHAR2(13),
-    tipo_subgenero VARCHAR2(255)
-);
-/
-
 CREATE OR REPLACE TYPE tp_livro_emprestado AS OBJECT (
-    cpf_cliente VARCHAR2(14),
+    cliente REF tp_cliente,
     livro_emprestado NUMBER
 );
 /
 
 CREATE OR REPLACE TYPE tp_empresta AS OBJECT (
-    isbn VARCHAR2(13),
-    numero_da_copia NUMBER,
-    data_de_emprestimo DATE,
+    obra REF tp_obra,
+    data_de_emprestimo TIMESTAMP,
     valor_multa NUMBER,
-    cpf_cliente VARCHAR2(14),
-    cpf_func VARCHAR2(14),
-    cpf_func_multa VARCHAR2(14)
+    cliente REF tp_cliente,
+    vendedor REF tp_funcionario,
+    multador REF tp_funcionario
 );
 /
 
@@ -154,19 +161,8 @@ CREATE OR REPLACE TYPE BODY tp_moradia AS
 END;
 /
 
-CREATE OR REPLACE TYPE BODY tp_dados_bancarios AS
-    -- Member procedures and functions here
-END;
-/
-
-CREATE OR REPLACE TYPE BODY tp_cartao AS
-    -- Member procedures and functions here
-END;
-/
-
 CREATE OR REPLACE TYPE BODY tp_pessoa AS
-    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT IS BEGIN
-        SELF.cpf := cpf;
+    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT IS BEGIN        SELF.cpf := cpf;
         SELF.nome := nome;
         SELF.email := email;
         SELF.sexo := sexo;
@@ -198,22 +194,9 @@ END;
 
 CREATE OR REPLACE TYPE BODY tp_funcionario AS
     OVERRIDING MEMBER FUNCTION exibir_nome RETURN VARCHAR2 IS
-        v_supervisor_nome VARCHAR2(50);
     BEGIN
-        SELECT p.nome INTO v_supervisor_nome
-        FROM tb_pessoa p
-        WHERE p.cpf = VALUE(SELF.tp_funcionario.cpf_supervisor).cpf;
-
-        RETURN 'Nome do Funcionário: ' || self.nome || ', Detalhes de seu supervisor: ' || v_supervisor_nome;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RETURN 'Nome do Funcionário: ' || self.nome || ', Supervisor não encontrado';
+        RETURN 'Nome do Funcionário: ';
     END exibir_nome;
-END;
-/
-
-CREATE OR REPLACE TYPE BODY tp_cliente AS
-    -- Member procedures and functions here
 END;
 /
 
@@ -227,99 +210,48 @@ CREATE OR REPLACE TYPE BODY tp_obra AS
 END;
 /
 
-CREATE OR REPLACE TYPE BODY tp_copia AS
-    -- Member procedures and functions here
-END;
-/
-
-CREATE OR REPLACE TYPE BODY tp_autor AS
-    -- Member procedures and functions here
-END;
-/
-
-CREATE OR REPLACE TYPE BODY tp_subgenero AS
-    -- Member procedures and functions here
-END;
-/
-
-CREATE OR REPLACE TYPE BODY tp AS
-    -- Member procedures and functions here
-END;
-/
-
-CREATE OR REPLACE TYPE BODY tp_livro_emprestado AS
-    -- Member procedures and functions here
-END;
-/
-
-CREATE OR REPLACE TYPE BODY tp_empresta AS
-    -- Member procedures and functions here
-END;
-/
-
 -- Create tables
 CREATE TABLE tb_moradia OF tp_moradia (
-    CONSTRAINT moradia_pk PRIMARY KEY (cep)
+    cep PRIMARY KEY
 );
 /
 
 CREATE TABLE tb_dados_bancarios OF tp_dados_bancarios (
-    CONSTRAINT dados_bancarios_pk PRIMARY KEY (conta)
+    conta PRIMARY KEY
 );
 /
 
-CREATE TABLE tb_pessoa OF tp_pessoa (
-    CONSTRAINT pessoa_pk PRIMARY KEY (cpf),
-    CONSTRAINT pessoa_cep_fk FOREIGN KEY (cep) REFERENCES tb_moradia (cep)
+CREATE TABLE tb_cartao OF tp_cartao (
+    numero_do_cartao PRIMARY KEY
 );
 /
 
 CREATE TABLE tb_funcionario OF tp_funcionario (
-    CONSTRAINT funcionario_pk PRIMARY KEY (cpf),
+    cpf PRIMARY KEY,
     conta SCOPE IS tb_dados_bancarios,
     cpf_supervisor WITH ROWID REFERENCES tb_funcionario
 );
 /
 
 CREATE TABLE tb_cliente OF tp_cliente (
-    CONSTRAINT cliente_pk PRIMARY KEY (cpf)
+    cpf PRIMARY KEY
 ) NESTED TABLE lista_cartoes STORE AS nt_cartoes;
 /
 
 CREATE TABLE tb_obra OF tp_obra (
-    CONSTRAINT obra_pk PRIMARY KEY (isbn)
-);
-/
-
-CREATE TABLE tb_copia OF tp_copia (
-    CONSTRAINT copia_pk PRIMARY KEY (isbn, numero_da_copia),
-    CONSTRAINT copia_isbn_fk FOREIGN KEY (isbn) REFERENCES tb_obra (isbn)
-);
-/
-
-CREATE TABLE tb_autor OF tp_autor (
-    CONSTRAINT autor_pk PRIMARY KEY (isbn, nome_autor),
-    CONSTRAINT autor_isbn_fk FOREIGN KEY (isbn) REFERENCES tb_obra (isbn)
-);
-/
-
-CREATE TABLE tb_subgenero OF tp_subgenero (
-    CONSTRAINT subgenero_pk PRIMARY KEY (isbn, tipo_subgenero),
-    CONSTRAINT subgenero_isbn_fk FOREIGN KEY (isbn) REFERENCES tb_obra (isbn)
+    isbn PRIMARY KEY
 );
 /
 
 CREATE TABLE tb_livro_emprestado OF tp_livro_emprestado (
-    CONSTRAINT livro_emprestado_pk PRIMARY KEY (cpf_cliente, livro_emprestado),
-    CONSTRAINT livro_emprestado_cpf_fk FOREIGN KEY (cpf_cliente) REFERENCES tb_cliente (cpf)
+    cliente WITH ROWID REFERENCES tb_cliente
 );
 /
 
 CREATE TABLE tb_empresta OF tp_empresta (
-    CONSTRAINT empresta_pk PRIMARY KEY (cpf_cliente, cpf_func, isbn, numero_da_copia),
-    CONSTRAINT empresta_isbn_fk FOREIGN KEY (isbn, numero_da_copia) REFERENCES tb_copia (isbn, numero_da_copia),
-    CONSTRAINT empresta_cpf_cliente_fk FOREIGN KEY (cpf_cliente) REFERENCES tb_cliente (cpf),
-    CONSTRAINT empresta_cpf_func_fk FOREIGN KEY (cpf_func) REFERENCES tb_funcionario (cpf),
-    CONSTRAINT empresta_cpf_func_multa_fk FOREIGN KEY (cpf_func_multa) REFERENCES tb_funcionario (cpf)
+    obra WITH ROWID REFERENCES tb_obra,
+    cliente WITH ROWID REFERENCES tb_cliente,
+    vendedor WITH ROWID REFERENCES tb_funcionario,
+    multador WITH ROWID REFERENCES tb_funcionario
 );
 /
