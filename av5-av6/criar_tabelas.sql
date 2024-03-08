@@ -6,7 +6,7 @@ CREATE OR REPLACE TYPE tp_moradia AS OBJECT (
     cidade VARCHAR2(255),
     estado VARCHAR2(2),
 
-    CONSTRUCTOR FUNCTION tp_moradia(SELF IN OUT NOCOPY tp_moradia, Cep VARCHAR2, Rua VARCHAR2, Bairro VARCHAR2, Cidade VARCHAR2, Estado VARCHAR2) RETURN SELF AS RESULT,
+    CONSTRUCTOR FUNCTION tp_moradia(SELF IN OUT NOCOPY tp_moradia, cep VARCHAR2, rua VARCHAR2, bairro VARCHAR2, cidade VARCHAR2, estado VARCHAR2) RETURN SELF AS RESULT,
 
     MAP MEMBER FUNCTION exibir_endereco_completo RETURN VARCHAR2,
     MEMBER PROCEDURE exibir_cep (SELF tp_moradia)
@@ -56,6 +56,7 @@ CREATE OR REPLACE TYPE tp_subgeneros AS VARRAY(5) OF tp_subgenero;
 CREATE OR REPLACE TYPE tp_copias AS VARRAY(50) OF tp_copia;
 /
 
+
 CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
     cpf VARCHAR2(14),
     nome VARCHAR2(50),
@@ -66,7 +67,17 @@ CREATE OR REPLACE TYPE tp_pessoa AS OBJECT (
     numero NUMBER,
     telefone tp_telefones,
 
-    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT,
+    CONSTRUCTOR FUNCTION tp_pessoa(
+        SELF IN OUT NOCOPY tp_pessoa,
+        cpf VARCHAR2,
+        nome VARCHAR2,
+        email VARCHAR2,
+        sexo CHAR,
+        data_de_nascimento DATE,
+        endereco REF tp_moradia,
+        numero NUMBER,
+        telefone tp_telefones
+    ) RETURN SELF AS RESULT,
     MEMBER FUNCTION exibir_nome RETURN VARCHAR2,
     FINAL MEMBER PROCEDURE exibir_detalhes_pessoa (SELF tp_pessoa)
 ) NOT FINAL NOT INSTANTIABLE;
@@ -132,7 +143,7 @@ CREATE OR REPLACE TYPE tp_empresta AS OBJECT (
 
 -- Create or replace type bodies
 CREATE OR REPLACE TYPE BODY tp_moradia AS
-    CONSTRUCTOR FUNCTION tp_moradia(SELF IN OUT NOCOPY tp_moradia, Cep VARCHAR2, Rua VARCHAR2, Bairro VARCHAR2, Cidade VARCHAR2, Estado VARCHAR2) RETURN SELF AS RESULT IS BEGIN
+    CONSTRUCTOR FUNCTION tp_moradia(SELF IN OUT NOCOPY tp_moradia, cep VARCHAR2, rua VARCHAR2, bairro VARCHAR2, cidade VARCHAR2, estado VARCHAR2) RETURN SELF AS RESULT IS BEGIN
         SELF.cep := cep;
         SELF.rua := rua;
         SELF.bairro := bairro;
@@ -143,36 +154,39 @@ CREATE OR REPLACE TYPE BODY tp_moradia AS
 
     MAP MEMBER FUNCTION exibir_endereco_completo RETURN VARCHAR2 IS
     BEGIN
-        RETURN 'Rua: ' || SELF.tp_moradia.rua || ', Bairro: ' || SELF.tp_moradia.bairro || ', Cidade: ' || SELF.tp_moradia.cidade || ', Estado: ' || SELF.tp_moradia.estado;
+        RETURN 'Rua: ' || SELF.rua || ', Bairro: ' || SELF.bairro || ', Cidade: ' || SELF.cidade || ', Estado: ' || SELF.estado;
     END;
 
     MEMBER PROCEDURE exibir_cep (SELF tp_moradia) IS
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('CEP: ' || SELF.tp_moradia.cep);
-    END;
-
-    FINAL MEMBER PROCEDURE exibir_endereco_completo (SELF tp_moradia) IS
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('Rua: ' || SELF.tp_moradia.rua);  
-        DBMS_OUTPUT.PUT_LINE('Bairro: ' || SELF.tp_moradia.bairro);
-        DBMS_OUTPUT.PUT_LINE('Cidade: ' || SELF.tp_moradia.cidade);
-        DBMS_OUTPUT.PUT_LINE('Estado: ' || SELF.enderecotp_moradia.estado);
+        DBMS_OUTPUT.PUT_LINE('CEP: ' || SELF.cep);
     END;
 END;
 /
 
 CREATE OR REPLACE TYPE BODY tp_pessoa AS
-    CONSTRUCTOR FUNCTION tp_pessoa(Cpf VARCHAR2, Nome VARCHAR2, Email VARCHAR2, Sexo CHAR, Data_de_nascimento DATE, Cep VARCHAR2, Numero NUMBER, Telefone tp_telefones) RETURN SELF AS RESULT IS BEGIN        SELF.cpf := cpf;
+    CONSTRUCTOR FUNCTION tp_pessoa(
+        SELF IN OUT NOCOPY tp_pessoa,
+        cpf VARCHAR2,
+        nome VARCHAR2,
+        email VARCHAR2,
+        sexo CHAR,
+        data_de_nascimento DATE,
+        endereco REF tp_moradia,
+        numero NUMBER,
+        telefone tp_telefones
+    ) RETURN SELF AS RESULT IS 
+    BEGIN
+        SELF.cpf := cpf;
         SELF.nome := nome;
         SELF.email := email;
         SELF.sexo := sexo;
         SELF.data_de_nascimento := data_de_nascimento;
-        SELF.cep := cep;
+        SELF.endereco := endereco;
         SELF.numero := numero;
         SELF.telefone := telefone;
         RETURN;
     END;
-
     MEMBER FUNCTION exibir_nome RETURN VARCHAR2 IS
     BEGIN
         RETURN SELF.nome;
@@ -180,22 +194,25 @@ CREATE OR REPLACE TYPE BODY tp_pessoa AS
 
     FINAL MEMBER PROCEDURE exibir_detalhes_pessoa (SELF tp_pessoa) IS
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('CPF: ' || SELF.tp_pessoa.cpf);
-        DBMS_OUTPUT.PUT_LINE('Nome: ' || SELF.tp_pessoa.nome);
-        DBMS_OUTPUT.PUT_LINE('Email: ' || SELF.tp_pessoa.email);
-        DBMS_OUTPUT.PUT_LINE('Sexo: ' || SELF.tp_pessoa.sexo);
-        DBMS_OUTPUT.PUT_LINE('Data de nascimento: ' || SELF.tp_pessoa.data_de_nascimento);
-        DBMS_OUTPUT.PUT_LINE('CEP: ' || SELF.tp_pessoa.cep);
-        DBMS_OUTPUT.PUT_LINE('Número: ' || SELF.tp_pessoa.numero);
-        DBMS_OUTPUT.PUT_LINE('Telefones: ' || SELF.tp_pessoa.telefone);
+        DBMS_OUTPUT.PUT_LINE('CPF: ' || SELF.cpf);
+        DBMS_OUTPUT.PUT_LINE('Nome: ' || SELF.nome);
+        DBMS_OUTPUT.PUT_LINE('Email: ' || SELF.email);
+        DBMS_OUTPUT.PUT_LINE('Sexo: ' || SELF.sexo);
+        DBMS_OUTPUT.PUT_LINE('Data de nascimento: ' || SELF.data_de_nascimento);
+        DBMS_OUTPUT.PUT_LINE('Numero: ' || SELF.numero);
+        DBMS_OUTPUT.PUT_LINE('Telefones: ');
+        FOR i IN 1..SELF.telefone.COUNT LOOP
+            DBMS_OUTPUT.PUT_LINE('   ' || SELF.telefone(i).telefone);
+        END LOOP;
     END;
 END;
 /
 
+
 CREATE OR REPLACE TYPE BODY tp_funcionario AS
     OVERRIDING MEMBER FUNCTION exibir_nome RETURN VARCHAR2 IS
     BEGIN
-        RETURN 'Nome do Funcionário: ';
+        RETURN ('Nome do Funcionário: ' || SELF.nome || ' ' || 'Salário do funcionário: ' || SELF.salario);
     END exibir_nome;
 END;
 /
